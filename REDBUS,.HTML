@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>redBus — Book Bus Tickets Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #d84315;
+    --red-dark: #bf360c;
+    --red-light: #fbe9e7;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --bg: #f5f5f5;
+    --white: #ffffff;
+    --text: #1a1a1a;
+    --text-sec: #666;
+    --text-muted: #999;
+    --border: #e0e0e0;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  
+  .header {
+    background: var(--red);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+    cursor: pointer;
+  }
+  .logo span { color: #ffd54f; }
+  .header-nav { margin-left: auto; display: flex; gap: 6px; }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.2); }
+
+  
+  .page { display: none; }
+  .page.active { display: block; }
+
+  
+  .hero {
+    background: var(--red);
+    padding: 48px 24px 80px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 34px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .hero p { color: rgba(255,255,255,0.75); font-size: 15px; }
+
+  .search-wrapper {
+    max-width: 700px;
+    margin: -48px auto 0;
+    padding: 0 16px;
+  }
+  .search-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    padding: 24px;
+  }
+  .search-row {
+    display: grid;
+    grid-template-columns: 1fr 44px 1fr;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-sec);
+    font-weight: 500;
+  }
+  .field-group input,
+  .field-group select {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: #fff;
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  .field-group input:focus,
+  .field-group select:focus { border-color: var(--red); }
+
+  .swap-btn {
+    background: var(--red-light);
+    border: 1.5px solid var(--red);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    color: var(--red);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.2s;
+  }
+  .swap-btn:hover { background: var(--red); color: #fff; transform: rotate(180deg); }
+
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .search-btn {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .search-btn:hover { background: var(--red-dark); }
+  .search-btn:active { transform: scale(0.98); }
+
+  .perks {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 32px 16px 16px;
+  }
+  .perk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-sec);
+  }
+  .perk-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--red-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .results-bar {
+    background: var(--red);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .results-bar strong { color: #fff; font-size: 16px; }
+  .results-bar span { color: rgba(255,255,255,0.75); font-size: 13px; }
+  .back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-right: 8px;
+  }
+
+  .results-body { max-width: 740px; margin: 0 auto; padding: 20px 16px; }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .filter-pill {
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--white);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .filter-pill.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .filter-pill:hover:not(.active) { border-color: var(--red); color: var(--red); }
+
+  .bus-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .bus-card:hover {
+    border-color: var(--red);
+    box-shadow: 0 2px 12px rgba(216,67,21,0.1);
+  }
+  .bus-name { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .bus-type { font-size: 12px; color: var(--text-sec); margin-bottom: 12px; }
+
+  .timing { display: flex; align-items: center; gap: 12px; }
+  .t-time { font-size: 20px; font-weight: 600; }
+  .t-city { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .dur-line { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; max-width: 100px; }
+  .dur-bar { width: 100%; height: 1px; background: var(--border); position: relative; }
+  .dur-bar::before, .dur-bar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .dur-bar::before { left: 0; }
+  .dur-bar::after { right: 0; }
+  .dur-text { font-size: 11px; color: var(--text-sec); }
+
+  .amenity-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .amenity { font-size: 11px; color: var(--text-sec); display: flex; align-items: center; gap: 4px; }
+
+  .rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-top: 8px;
+  }
+
+  .price-col { text-align: right; }
+  .price-from { font-size: 11px; color: var(--text-muted); }
+  .price-amt { font-size: 22px; font-weight: 700; color: var(--red); margin: 3px 0; }
+  .seats-avail { font-size: 12px; font-weight: 500; margin-bottom: 10px; }
+  .seats-avail.low { color: #c62828; }
+  .seats-avail.ok { color: var(--green); }
+
+  .view-btn {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .view-btn:hover { background: var(--red-dark); }
+
+ 
+  .seat-page-header {
+    background: var(--red);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .seat-page-header strong { color: #fff; }
+  .seat-page-header span { color: rgba(255,255,255,0.75); font-size: 13px; }
+
+  .seats-container { max-width: 740px; margin: 0 auto; padding: 20px 16px; }
+
+  .journey-bar {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .jb-route { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .jb-detail { font-size: 13px; color: var(--text-sec); }
+  .jb-price { font-size: 22px; font-weight: 700; color: var(--red); }
+  .jb-price-label { font-size: 11px; color: var(--text-muted); text-align: right; }
+
+  .seat-layout-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .seat-deck {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .deck-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .seat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 38px);
+    gap: 7px;
+    justify-content: center;
+  }
+  .seat {
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sec);
+    background: var(--white);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .seat.available:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+  .seat.selected { background: var(--red); border-color: var(--red); color: #fff; }
+  .seat.booked { background: #f5f5f5; border-color: #e0e0e0; color: #ccc; cursor: not-allowed; }
+  .seat.ladies { background: #fce4ec; border-color: #f48fb1; color: #ad1457; }
+  .seat.ladies:hover { background: #f8bbd9; }
+  .aisle-gap { width: 38px; height: 38px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-sec); }
+  .legend-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border); }
+  .legend-box.sel { background: var(--red); border-color: var(--red); }
+  .legend-box.bkd { background: #f5f5f5; }
+  .legend-box.ladies { background: #fce4ec; border-color: #f48fb1; }
+
+  /* Right panel */
+  .right-panel { display: flex; flex-direction: column; gap: 14px; }
+
+  .booking-summary {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .summary-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .empty-sel { color: var(--text-muted); font-size: 13px; text-align: center; padding: 8px 0; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; color: var(--text-sec); }
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1.5px solid var(--border);
+  }
+
+  .proceed-btn {
+    width: 100%;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .proceed-btn:hover:not(:disabled) { background: var(--red-dark); }
+  .proceed-btn:active:not(:disabled) { transform: scale(0.99); }
+  .proceed-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .stop-panel {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .stop-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .stop-panel select {
+    width: 100%;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+  }
+  .stop-panel select:focus { border-color: var(--red); }
+
+  
+  .city-input-wrap { position: relative; }
+  .city-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1.5px solid var(--red);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 200;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+  }
+  .city-dropdown.open { display: block; }
+  .city-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.1s;
+  }
+  .city-option:last-child { border-bottom: none; }
+  .city-option:hover, .city-option.highlighted { background: var(--red-light); color: var(--red); }
+  .city-option .city-state { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+  .city-option mark { background: none; color: var(--red); font-weight: 700; }
+
+  /* ── Results top-bar stats ── */
+  .results-stats {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .stat-chip strong { font-weight: 700; }
+
+ 
+  .offers-section {
+    max-width: 700px;
+    margin: 28px auto 0;
+    padding: 0 16px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .view-more {
+    font-size: 13px;
+    color: var(--red);
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .view-more:hover { opacity: 0.75; }
+
+ 
+  .offer-filters { display: flex; gap: 8px; margin-bottom: 14px; }
+  .offer-pill {
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--white);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .offer-pill.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .offer-pill:hover:not(.active) { border-color: var(--red); color: var(--red); }
+
+  
+  .offers-carousel-wrap { position: relative; }
+  .offers-track-outer { overflow: hidden; border-radius: var(--radius-lg); }
+  .offers-track {
+    display: flex;
+    gap: 14px;
+    transition: transform 0.35s ease;
+  }
+  .offer-card {
+    flex: 0 0 calc(50% - 7px);
+    border-radius: var(--radius-lg);
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .offer-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+  .offer-card.peach { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); }
+  .offer-card.gold  { background: linear-gradient(135deg, #fffde7 0%, #fff59d 100%); }
+  .offer-card.rose  { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); }
+  .offer-card.mint  { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); }
+  .offer-card.sky   { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+  .offer-card.lilac { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); }
+
+  .offer-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    width: fit-content;
+  }
+  .offer-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+  .offer-valid {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  .offer-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .offer-code {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.65);
+    border: 1.5px dashed rgba(0,0,0,0.2);
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .offer-code:hover { background: rgba(255,255,255,0.9); }
+  .offer-copy-tip { font-size: 10px; color: #888; }
+  .offer-bus-img {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 38px;
+    opacity: 0.18;
+    pointer-events: none;
+    transform: scaleX(-1);
+  }
+
+  .carousel-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .cnav-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    color: var(--text-sec);
+  }
+  .cnav-btn:hover { border-color: var(--red); color: var(--red); }
+  .cnav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .carousel-dots { display: flex; gap: 5px; margin-right: auto; align-items: center; }
+  .cdot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.15s, width 0.2s;
+  }
+  .cdot.active { background: var(--red); width: 16px; border-radius: 3px; }
+
+  .booking-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .booking-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .bk-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .bk-bus-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .bk-bus-type { font-size: 12px; color: var(--text-sec); }
+  .bk-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .bk-status.upcoming  { background: #e3f2fd; color: #1565c0; }
+  .bk-status.completed { background: var(--green-light); color: var(--green); }
+  .bk-status.cancelled { background: #fce4ec; color: #c62828; }
+  .bk-route {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .bk-city { flex: 1; }
+  .bk-city-name { font-size: 15px; font-weight: 700; }
+  .bk-city-time { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
+  .bk-arrow {
+    font-size: 18px;
+    color: var(--red);
+    flex-shrink: 0;
+  }
+  .bk-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--text-sec);
+  }
+  .bk-meta span { display: flex; align-items: center; gap: 4px; }
+  .bk-meta strong { color: var(--text); font-weight: 600; }
+  .bk-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .bk-total { font-size: 17px; font-weight: 700; color: var(--red); }
+  .bk-total-label { font-size: 11px; color: var(--text-muted); }
+  .bk-actions { display: flex; gap: 8px; }
+  .bk-btn {
+    border: 1.5px solid var(--border);
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    color: var(--text-sec);
+    transition: all 0.15s;
+  }
+  .bk-btn:hover { border-color: var(--red); color: var(--red); }
+  .bk-btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  .bk-btn.primary:hover { background: var(--red-dark); }
+  .bk-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+  }
+  .bk-empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .bk-empty-title { font-size: 16px; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+  .bk-empty-sub { font-size: 13px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .search-row { grid-template-columns: 1fr; }
+    .swap-btn { display: none; }
+    .bottom-row { grid-template-columns: 1fr; }
+    .seat-layout-wrap { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 26px; }
+    .offer-card { flex: 0 0 calc(85% - 7px); }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo" onclick="showPage('search')">red<span>Bus</span></div>
+  <nav class="header-nav">
+    <button class="nav-btn active" id="nav-search" onclick="showPage('search')">Home</button>
+    <button class="nav-btn" id="nav-bookings" onclick="showPage('bookings')">Bookings</button>
+    <button class="nav-btn" id="nav-login-btn" onclick="openAuthModal('login')">Login</button>
+    <button class="nav-btn" id="nav-signup-btn" onclick="openAuthModal('signup')" style="background:rgba(255,255,255,0.18);font-weight:600;">Sign Up</button>
+    <div id="nav-user-info" style="display:none;align-items:center;gap:8px;">
+      <div style="width:30px;height:30px;background:rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;" id="nav-avatar" onclick="toggleUserMenu()">👤</div>
+      <div id="user-menu" style="display:none;position:absolute;top:52px;right:16px;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);padding:8px 0;min-width:200px;z-index:300;">
+        <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+          <div id="menu-name" style="font-weight:600;color:#1a1a1a;font-size:14px;"></div>
+          <div id="menu-email" style="font-size:12px;color:#999;margin-top:2px;"></div>
+        </div>
+        <div style="padding:8px 0;">
+          <div onclick="showPage('bookings');toggleUserMenu()" style="padding:9px 16px;font-size:14px;color:#333;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">🎫 My Bookings</div>
+          <div onclick="logoutUser()" style="padding:9px 16px;font-size:14px;color:#d84315;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#fff3f0'" onmouseout="this.style.background=''">🚪 Logout</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<div id="page-search" class="page active">
+  <div class="hero">
+    <h1>Book Bus Tickets Online</h1>
+    <p>Largest network — 35,000+ routes across India</p>
+  </div>
+  <div class="search-wrapper">
+    <div class="search-card">
+      <div class="search-row">
+        <div class="field-group">
+          <label>From</label>
+          <div class="city-input-wrap">
+            <input type="text" id="from-city" value="Enter departure city" placeholder="Enter departure city" autocomplete="off" oninput="filterCities('from-city','from-dropdown')" onfocus="filterCities('from-city','from-dropdown')" onblur="closeDrop('from-dropdown')">
+            <div class="city-dropdown" id="from-dropdown"></div>
+          </div>
+        </div>
+        <button class="swap-btn" onclick="swapCities()" title="Swap">⇄</button>
+        <div class="field-group">
+          <label>To</label>
+          <div class="city-input-wrap">
+            <input type="text" id="to-city" value="Enter destination city" placeholder="Enter destination city" autocomplete="off" oninput="filterCities('to-city','to-dropdown')" onfocus="filterCities('to-city','to-dropdown')" onblur="closeDrop('to-dropdown')">
+            <div class="city-dropdown" id="to-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-row">
+        <div class="field-group">
+          <label>Date of journey</label>
+          <input type="date" id="journey-date">
+        </div>
+        <div class="field-group">
+          <label>Passengers</label>
+          <select>
+            <option>1 Passenger</option>
+            <option>2 Passengers</option>
+            <option>3 Passengers</option>
+            <option>4 Passengers</option>
+          </select>
+        </div>
+        <button class="search-btn" onclick="goToResults()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Search buses
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="perks">
+    <div class="perk"><div class="perk-icon">🛡️</div>Safe &amp; secure payments</div>
+    <div class="perk"><div class="perk-icon">🎫</div>Instant confirmation</div>
+    <div class="perk"><div class="perk-icon">🎧</div>24/7 customer support</div>
+    <div class="perk"><div class="perk-icon">🔄</div>Easy cancellation</div>
+    <div class="perk"><div class="perk-icon">🏆</div>1 crore+ happy travellers</div>
+  </div>
+
+  <div class="offers-section">
+    <div class="section-header">
+      <div class="section-title">🏷️ Offers for you</div>
+      <a class="view-more" href="#">View more →</a>
+    </div>
+    <div class="offer-filters">
+      <button class="offer-pill active" onclick="filterOffers('all',this)">All</button>
+      <button class="offer-pill" onclick="filterOffers('bus',this)">Bus</button>
+    </div>
+    <div class="offers-carousel-wrap">
+      <div class="offers-track-outer">
+        <div class="offers-track" id="offers-track"></div>
+      </div>
+      <div class="carousel-nav">
+        <div class="carousel-dots" id="carousel-dots"></div>
+        <button class="cnav-btn" id="prev-btn" onclick="scrollOffers(-1)" disabled>‹</button>
+        <button class="cnav-btn" id="next-btn" onclick="scrollOffers(1)">›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-results" class="page">
+  <div class="results-bar">
+    <button class="back-btn" onclick="showPage('search')">← Back</button>
+    <strong id="results-route">Hyderabad → Bengaluru</strong>
+    <span id="results-date">Today</span>
+  </div>
+  <div class="results-body">
+    <div class="filters">
+      <div class="filter-pill active" onclick="filterBuses('all',this)">All</div>
+      <div class="filter-pill" onclick="filterBuses('ac',this)">AC</div>
+      <div class="filter-pill" onclick="filterBuses('non-ac',this)">Non-AC</div>
+      <div class="filter-pill" onclick="filterBuses('sleeper',this)">Sleeper</div>
+      <div class="filter-pill" onclick="filterBuses('seater',this)">Seater</div>
+      <div class="filter-pill" onclick="filterBuses('night',this)">Night departure</div>
+    </div>
+    <div id="bus-list"></div>
+  </div>
+</div>
+
+<!-- ══ SEAT SELECTION PAGE ══ -->
+<div id="page-seats" class="page">
+  <div class="seat-page-header">
+    <button class="back-btn" onclick="showPage('results')">← Back</button>
+    <strong id="seat-header-name">KSRTC Airavat Club Class</strong>
+    <span id="seat-header-detail">Hyderabad → Bengaluru · 21:00 → 06:30</span>
+  </div>
+  <div class="seats-container">
+    <div class="journey-bar">
+      <div>
+        <div class="jb-route" id="jb-name">KSRTC Airavat Club Class</div>
+        <div class="jb-detail" id="jb-detail">Hyderabad → Bengaluru &nbsp;·&nbsp; 21:00 → 06:30 &nbsp;·&nbsp; <span style="color:var(--red)">9h 30m</span></div>
+      </div>
+      <div style="text-align:right">
+        <div class="jb-price" id="jb-price">₹999</div>
+        <div class="jb-price-label">per seat onwards</div>
+      </div>
+    </div>
+
+    <div class="seat-layout-wrap">
+      
+      <div>
+        <div class="seat-deck">
+          <div class="deck-label">🪑 Lower deck</div>
+          <div class="seat-grid" id="lower-deck"></div>
+        </div>
+        <div class="seat-deck" style="margin-top:14px">
+          <div class="deck-label">🛏️ Upper deck</div>
+          <div class="seat-grid" id="upper-deck"></div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-box"></div>Available</div>
+          <div class="legend-item"><div class="legend-box sel"></div>Selected</div>
+          <div class="legend-item"><div class="legend-box bkd"></div>Booked</div>
+          <div class="legend-item"><div class="legend-box ladies"></div>Ladies only</div>
+        </div>
+      </div>
+
+      
+      <div class="right-panel">
+        <div class="booking-summary">
+          <div class="summary-title">Booking summary</div>
+          <div id="empty-msg" class="empty-sel">No seats selected yet.<br>Click a seat to select.</div>
+          <div id="summary-details" style="display:none">
+            <div class="summary-row"><span>Selected seats</span><span id="sum-seats" style="font-weight:600;color:var(--text)">—</span></div>
+            <div class="summary-row"><span>Seat fare</span><span id="sum-fare">₹0</span></div>
+            <div class="summary-row"><span>Convenience fee (2%)</span><span id="sum-fee">₹0</span></div>
+            <div class="summary-total"><span>Total</span><span id="sum-total" style="color:var(--red)">₹0</span></div>
+          </div>
+          <button class="proceed-btn" id="proceed-btn" disabled onclick="handleProceed()">
+            Select seats to proceed
+          </button>
+        </div>
+
+        <div class="stop-panel">
+          <div class="stop-title">🚏 Boarding point</div>
+          <select id="boarding-select">
+            <option>Mehdipatnam Bus Stop — 20:45</option>
+            <option>Miyapur MMTS — 21:15</option>
+            <option>MGBS Imlibun — 21:00</option>
+            <option>Uppal — 20:30</option>
+          </select>
+          <div class="stop-title">📍 Dropping point</div>
+          <select id="dropping-select">
+            <option>Majestic Bus Stand — 06:30</option>
+            <option>Silk Board — 06:00</option>
+            <option>Electronic City — 05:45</option>
+            <option>Hebbal — 06:15</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="page-bookings" class="page">
+  <div class="results-bar">
+    <button class="back-btn" onclick="showPage('search')">← Back</button>
+    <strong>My Bookings</strong>
+  </div>
+  <div class="results-body">
+    <div class="filters" style="margin-bottom:18px;">
+      <div class="filter-pill active" id="bk-all" onclick="filterBookings('all',this)">All</div>
+      <div class="filter-pill" id="bk-upcoming" onclick="filterBookings('upcoming',this)">Upcoming</div>
+      <div class="filter-pill" id="bk-completed" onclick="filterBookings('completed',this)">Completed</div>
+      <div class="filter-pill" id="bk-cancelled" onclick="filterBookings('cancelled',this)">Cancelled</div>
+    </div>
+    <div id="bookings-list"></div>
+  </div>
+</div>
+
+<script>
+const CITIES = [
+  { name: 'Hyderabad', state: 'Telangana' },
+  { name: 'Bengaluru', state: 'Karnataka' },
+  { name: 'Mumbai', state: 'Maharashtra' },
+  { name: 'Chennai', state: 'Tamil Nadu' },
+  { name: 'Delhi', state: 'Delhi' },
+  { name: 'Pune', state: 'Maharashtra' },
+  { name: 'Kolkata', state: 'West Bengal' },
+  { name: 'Ahmedabad', state: 'Gujarat' },
+  { name: 'Jaipur', state: 'Rajasthan' },
+  { name: 'Surat', state: 'Gujarat' },
+  { name: 'Lucknow', state: 'Uttar Pradesh' },
+  { name: 'Nagpur', state: 'Maharashtra' },
+  { name: 'Visakhapatnam', state: 'Andhra Pradesh' },
+  { name: 'Vijayawada', state: 'Andhra Pradesh' },
+  { name: 'Tirupati', state: 'Andhra Pradesh' },
+  { name: 'Warangal', state: 'Telangana' },
+  { name: 'Mysuru', state: 'Karnataka' },
+  { name: 'Mangaluru', state: 'Karnataka' },
+  { name: 'Coimbatore', state: 'Tamil Nadu' },
+  { name: 'Madurai', state: 'Tamil Nadu' },
+  { name: 'Trichy', state: 'Tamil Nadu' },
+  { name: 'Salem', state: 'Tamil Nadu' },
+  { name: 'Indore', state: 'Madhya Pradesh' },
+  { name: 'Bhopal', state: 'Madhya Pradesh' },
+  { name: 'Nashik', state: 'Maharashtra' },
+  { name: 'Aurangabad', state: 'Maharashtra' },
+  { name: 'Kolhapur', state: 'Maharashtra' },
+  { name: 'Goa (Panaji)', state: 'Goa' },
+  { name: 'Kochi', state: 'Kerala' },
+  { name: 'Thiruvananthapuram', state: 'Kerala' },
+  { name: 'Kozhikode', state: 'Kerala' },
+  { name: 'Bhubaneswar', state: 'Odisha' },
+  { name: 'Patna', state: 'Bihar' },
+  { name: 'Raipur', state: 'Chhattisgarh' },
+  { name: 'Chandigarh', state: 'Punjab' },
+  { name: 'Amritsar', state: 'Punjab' },
+  { name: 'Dehradun', state: 'Uttarakhand' },
+  { name: 'Agra', state: 'Uttar Pradesh' },
+  { name: 'Varanasi', state: 'Uttar Pradesh' },
+  { name: 'Shimla', state: 'Himachal Pradesh' },
+];
+
+const OFFERS = [
+  { cat:'bus', theme:'peach', title:'Save up to ₹250 on bus tickets', valid:'Valid till 31 May', code:'FIRST', desc:'For first-time users on RedBus' },
+  { cat:'bus', theme:'gold',  title:'Save up to ₹200 on Primo operators', valid:'Valid till 31 May', code:'PRIMO200', desc:'Book with top-rated operators' },
+  { cat:'bus', theme:'rose',  title:'Save up to ₹300 on bus tickets', valid:'Valid till 31 May', code:'FESTIVE300', desc:'Red Hot Summer Sale — limited time!' },
+  { cat:'bus', theme:'mint',  title:'Save upto ₹100 on NueGo buses', valid:'Valid till 31 May', code:'NUEGO10', desc:'Eco-friendly AC bus experience' },
+  { cat:'bus', theme:'peach', title:'₹500 cashback on AC Sleeper', valid:'Valid till 5 Jun', code:'ACSLEEP500', desc:'Minimum booking of ₹1200' },
+];
+
+const buses = [
+  { name:'KSRTC Airavat Club Class', type:'AC Sleeper (2+1)', tags:['ac','sleeper','night'], dep:'21:00', arr:'06:30', dur:'9h 30m', price:999,  seats:12, rating:4.3, amenities:['WiFi','USB','Water'] },
+  { name:'SRS Travels',              type:'AC Sleeper (2+2)', tags:['ac','sleeper','night'], dep:'22:30', arr:'07:45', dur:'9h 15m', price:850,  seats:4,  rating:4.1, amenities:['USB','Water'] },
+  { name:'Orange Travels',           type:'Volvo Multi-Axle (2+2)', tags:['ac','seater','night'], dep:'20:00', arr:'05:30', dur:'9h 30m', price:1200, seats:18, rating:4.5, amenities:['WiFi','USB','Water','Blanket'] },
+  { name:'Patel Travels',            type:'Non-AC Seater (2+2)', tags:['non-ac','seater'], dep:'18:00', arr:'04:30', dur:'10h 30m', price:450, seats:22, rating:3.8, amenities:['Water'] },
+  { name:'VRL Travels',              type:'AC Seater (2+1)',    tags:['ac','seater','night'], dep:'23:00', arr:'08:30', dur:'9h 30m', price:750, seats:2,  rating:4.2, amenities:['USB','Water'] },
+  { name:'Chartered Speed',          type:'AC Sleeper (2+1)',   tags:['ac','sleeper','night'], dep:'19:30', arr:'05:00', dur:'9h 30m', price:1100, seats:9, rating:4.4, amenities:['WiFi','USB','Water','Blanket'] },
+  { name:'Konduskar Travels',        type:'Non-AC Sleeper (2+1)', tags:['non-ac','sleeper'], dep:'20:30', arr:'07:00', dur:'10h 30m', price:550, seats:14, rating:3.9, amenities:['Water'] },
+  { name:'Prasanna Purple',          type:'AC Seater/Sleeper',  tags:['ac','seater','sleeper','night'], dep:'21:30', arr:'07:00', dur:'9h 30m', price:900, seats:6, rating:4.0, amenities:['USB','Water'] }
+];
+
+const amenityEmoji = { WiFi:'📶', USB:'🔌', Water:'💧', Blanket:'🛏️' };
+
+let activeFilter = 'all';
+let selectedSeats = [];
+let seatPriceMap = {};
+let currentBusPrice = 999;
+let currentBusIdx = 0;
+let offerFilter = 'all';
+let carouselIdx = 0;
+
+// ── City autocomplete ──
+let dropCloseTimer = null;
+function filterCities(inputId, dropId) {
+  clearTimeout(dropCloseTimer);
+  const val = document.getElementById(inputId).value.toLowerCase();
+  const drop = document.getElementById(dropId);
+  const matches = CITIES.filter(c => c.name.toLowerCase().includes(val)).slice(0, 10);
+  if (!matches.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = matches.map(c => {
+    const highlighted = c.name.replace(new RegExp(`(${val})`, 'gi'), '<mark>$1</mark>');
+    return `<div class="city-option" onmousedown="pickCity('${inputId}','${dropId}','${c.name}')">
+      <span>📍</span><span>${highlighted}</span><span class="city-state">${c.state}</span>
+    </div>`;
+  }).join('');
+  drop.classList.add('open');
+}
+function closeDrop(dropId) {
+  dropCloseTimer = setTimeout(() => {
+    document.getElementById(dropId).classList.remove('open');
+  }, 180);
+}
+function pickCity(inputId, dropId, name) {
+  document.getElementById(inputId).value = name;
+  document.getElementById(dropId).classList.remove('open');
+}
+
+// ── Offers ──
+function renderOffers(filter) {
+  offerFilter = filter;
+  const track = document.getElementById('offers-track');
+  const visible = filter === 'all' ? OFFERS : OFFERS.filter(o => o.cat === filter);
+  track.innerHTML = visible.map((o, i) => `
+    <div class="offer-card ${o.theme}">
+      <div>
+        <div class="offer-tag">🚌 ${o.cat.charAt(0).toUpperCase()+o.cat.slice(1)}</div>
+        <div class="offer-title">${o.title}</div>
+        <div class="offer-valid">${o.valid}</div>
+        <div style="font-size:12px;color:#555;margin-bottom:6px;">${o.desc}</div>
+      </div>
+      <div class="offer-code-row">
+        <div class="offer-code" onclick="copyCode('${o.code}',this)">🏷️ ${o.code}</div>
+        <span class="offer-copy-tip">tap to copy</span>
+      </div>
+      <div class="offer-bus-img">🚌</div>
+    </div>`).join('');
+  carouselIdx = 0;
+  track.style.transform = 'translateX(0)';
+  renderDots(visible.length);
+  updateNavBtns(visible.length);
+}
+
+function filterOffers(filter, el) {
+  document.querySelectorAll('.offer-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderOffers(filter);
+}
+
+function copyCode(code, el) {
+  navigator.clipboard.writeText(code).catch(()=>{});
+  const orig = el.innerHTML;
+  el.innerHTML = '✅ Copied!';
+  el.style.color = 'var(--green)';
+  setTimeout(() => { el.innerHTML = orig; el.style.color = ''; }, 1500);
+}
+
+function getCardsPerView() { return window.innerWidth < 560 ? 1 : 2; }
+
+function scrollOffers(dir) {
+  const track = document.getElementById('offers-track');
+  const perView = getCardsPerView();
+  const count = (offerFilter === 'all' ? OFFERS : OFFERS.filter(o => o.cat === offerFilter)).length;
+  const maxIdx = Math.ceil(count / perView) - 1;
+  carouselIdx = Math.max(0, Math.min(maxIdx, carouselIdx + dir));
+  const cardW = track.querySelector('.offer-card')?.offsetWidth || 0;
+  const gap = 14;
+  track.style.transform = `translateX(-${carouselIdx * (cardW * perView + gap * perView)}px)`;
+  updateNavBtns(count);
+  renderDots(count);
+}
+
+function renderDots(count) {
+  const perView = getCardsPerView();
+  const pages = Math.ceil(count / perView);
+  const dotsEl = document.getElementById('carousel-dots');
+  dotsEl.innerHTML = Array.from({length: pages}, (_, i) =>
+    `<div class="cdot ${i === carouselIdx ? 'active' : ''}" onclick="goToPage(${i})"></div>`
+  ).join('');
+}
+
+function goToPage(idx) {
+  const filter = offerFilter;
+  const count = (filter === 'all' ? OFFERS : OFFERS.filter(o => o.cat === filter)).length;
+  carouselIdx = idx;
+  const track = document.getElementById('offers-track');
+  const perView = getCardsPerView();
+  const cardW = track.querySelector('.offer-card')?.offsetWidth || 0;
+  const gap = 14;
+  track.style.transform = `translateX(-${idx * (cardW * perView + gap * perView)}px)`;
+  updateNavBtns(count);
+  renderDots(count);
+}
+
+function updateNavBtns(count) {
+  const perView = getCardsPerView();
+  const maxIdx = Math.ceil(count / perView) - 1;
+  document.getElementById('prev-btn').disabled = carouselIdx === 0;
+  document.getElementById('next-btn').disabled = carouselIdx >= maxIdx;
+}
+
+// ── Render bus list ──
+function renderBuses(filter) {
+  const list = document.getElementById('bus-list');
+  const filtered = filter === 'all' ? buses : buses.filter(b => b.tags.includes(filter));
+  const fromCity = document.getElementById('from-city').value.trim() || 'Hyderabad';
+  const toCity = document.getElementById('to-city').value.trim() || 'Bengaluru';
+  list.innerHTML = filtered.map((b, i) => {
+    const realIdx = buses.indexOf(b);
+    return `
+    <div class="bus-card" onclick="selectBus(${realIdx})">
+      <div>
+        <div class="bus-name">${b.name}</div>
+        <div class="bus-type">${b.type}</div>
+        <div class="timing">
+          <div><div class="t-time">${b.dep}</div><div class="t-city">${fromCity}</div></div>
+          <div class="dur-line">
+            <div class="dur-bar"></div>
+            <div class="dur-text">${b.dur}</div>
+          </div>
+          <div><div class="t-time">${b.arr}</div><div class="t-city">${toCity}</div></div>
+        </div>
+        <div class="amenity-row">
+          ${b.amenities.map(a => `<div class="amenity">${amenityEmoji[a] || ''} ${a}</div>`).join('')}
+        </div>
+        <div class="rating-badge">⭐ ${b.rating} / 5</div>
+      </div>
+      <div class="price-col">
+        <div class="price-from">starts from</div>
+        <div class="price-amt">₹${b.price}</div>
+        <div class="seats-avail ${b.seats <= 5 ? 'low' : 'ok'}">${b.seats <= 5 ? '⚠️ Only ' : '✅ '} ${b.seats} seats left</div>
+        <button class="view-btn" onclick="event.stopPropagation();selectBus(${realIdx})">View seats →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterBuses(filter, el) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderBuses(filter);
+}
+
+// ── Seat selection ──
+function selectBus(idx) {
+  const b = buses[idx];
+  currentBusIdx = idx;
+  currentBusPrice = b.price;
+  selectedSeats = [];
+  seatPriceMap = {};
+
+  const fromCity = document.getElementById('from-city').value.trim() || 'Hyderabad';
+  const toCity = document.getElementById('to-city').value.trim() || 'Bengaluru';
+
+  document.getElementById('jb-name').textContent = b.name;
+  document.getElementById('seat-header-name').textContent = b.name;
+  document.getElementById('jb-detail').innerHTML = `${fromCity} → ${toCity} &nbsp;·&nbsp; ${b.dep} → ${b.arr} &nbsp;·&nbsp; <span style="color:var(--red)">${b.dur}</span>`;
+  document.getElementById('seat-header-detail').textContent = `${fromCity} → ${toCity} · ${b.dep} → ${b.arr}`;
+  document.getElementById('jb-price').textContent = '₹' + b.price;
+
+  renderDeck('lower-deck', 20, b.price);
+  renderDeck('upper-deck', 20, b.price + 100);
+  updateSummary();
+  showPage('seats');
+}
+
+function renderDeck(deckId, count, price) {
+  const el = document.getElementById(deckId);
+  const bookedSet = new Set(randomBooked(count, Math.floor(count * 0.45)));
+  const ladiesSet = new Set([3, 4]);
+  el.innerHTML = '';
+
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 5; col++) {
+      if (col === 2) { el.innerHTML += '<div class="aisle-gap"></div>'; continue; }
+      const seatNum = row * 4 + (col < 2 ? col : col - 1) + 1;
+      if (seatNum > count) { el.innerHTML += '<div class="aisle-gap"></div>'; continue; }
+      const id = deckId + '-' + seatNum;
+      seatPriceMap[id] = price;
+      const isBooked = bookedSet.has(seatNum);
+      const isLadies = ladiesSet.has(seatNum);
+      let cls = isBooked ? 'booked' : (isLadies ? 'ladies' : 'available');
+      el.innerHTML += `<div class="seat ${cls}" id="${id}" data-base="${cls}" onclick="toggleSeat('${id}')">${seatNum}</div>`;
+    }
+  }
+}
+
+function randomBooked(count, n) {
+  const all = Array.from({length: count}, (_, i) => i + 1);
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  return all.slice(0, n);
+}
+
+function toggleSeat(id) {
+  const el = document.getElementById(id);
+  const base = el.getAttribute('data-base');
+  if (base === 'booked') return;
+
+  const idx = selectedSeats.indexOf(id);
+  if (idx >= 0) {
+    selectedSeats.splice(idx, 1);
+    el.classList.remove('selected');
+    el.classList.add(base);
+  } else {
+    if (selectedSeats.length >= 6) { alert('You can select up to 6 seats at a time.'); return; }
+    selectedSeats.push(id);
+    el.classList.remove(base);
+    el.classList.add('selected');
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  const emptyMsg = document.getElementById('empty-msg');
+  const detailsEl = document.getElementById('summary-details');
+  const btn = document.getElementById('proceed-btn');
+
+  if (selectedSeats.length === 0) {
+    emptyMsg.style.display = 'block';
+    detailsEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Select seats to proceed';
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+  detailsEl.style.display = 'block';
+  btn.disabled = false;
+
+  const fare = selectedSeats.reduce((s, id) => s + (seatPriceMap[id] || currentBusPrice), 0);
+  const fee = Math.round(fare * 0.02);
+  const total = fare + fee;
+  const seatLabels = selectedSeats.map(id => id.replace('lower-deck-', 'L').replace('upper-deck-', 'U')).join(', ');
+
+  document.getElementById('sum-seats').textContent = seatLabels;
+  document.getElementById('sum-fare').textContent = '₹' + fare.toLocaleString('en-IN');
+  document.getElementById('sum-fee').textContent = '₹' + fee.toLocaleString('en-IN');
+  document.getElementById('sum-total').textContent = '₹' + total.toLocaleString('en-IN');
+  btn.textContent = `Proceed to payment — ₹${total.toLocaleString('en-IN')} →`;
+}
+
+function handleProceed() {
+  if (selectedSeats.length === 0) return;
+  const total = document.getElementById('sum-total').textContent;
+  const seats = document.getElementById('sum-seats').textContent;
+  const bus = buses[currentBusIdx].name;
+  const boarding = document.getElementById('boarding-select').value;
+  const dropping = document.getElementById('dropping-select').value;
+  alert(
+    `✅ Booking confirmed! (Demo)\n\n` +
+    `Bus: ${bus}\n` +
+    `Seats: ${seats}\n` +
+    `Boarding: ${boarding}\n` +
+    `Dropping: ${dropping}\n` +
+    `Total: ${total}`
+  );
+}
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + name);
+  if (navBtn) navBtn.classList.add('active');
+  if (name === 'bookings') renderBookings('all');
+  window.scrollTo(0, 0);
+}
+
+function goToResults() {
+  const from = document.getElementById('from-city').value.trim() || 'Hyderabad';
+  const to = document.getElementById('to-city').value.trim() || 'Bengaluru';
+  const dateVal = document.getElementById('journey-date').value;
+  const dateStr = dateVal ? new Date(dateVal).toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short', year:'numeric'}) : 'Today';
+  document.getElementById('results-route').textContent = from + ' → ' + to;
+  document.getElementById('results-date').textContent = dateStr;
+  renderBuses(activeFilter);
+  showPage('results');
+}
+
+function swapCities() {
+  const f = document.getElementById('from-city');
+  const t = document.getElementById('to-city');
+  [f.value, t.value] = [t.value, f.value];
+}
+
+// ── Bookings Data & Render ──
+const BOOKINGS = [];
+
+let bookingFilter = 'all';
+
+function filterBookings(filter, el) {
+  bookingFilter = filter;
+  document.querySelectorAll('#page-bookings .filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderBookings(filter);
+}
+
+function renderBookings(filter) {
+  const list = document.getElementById('bookings-list');
+  const filtered = filter === 'all' ? BOOKINGS : BOOKINGS.filter(b => b.status === filter);
+  if (!filtered.length) {
+    const isAll = filter === 'all';
+    list.innerHTML = `<div class="bk-empty">
+      <div class="bk-empty-icon">🚌</div>
+      <div class="bk-empty-title">First, Go and Book Your Ticket!</div>
+      <div class="bk-empty-sub">${isAll ? "You haven't booked any bus tickets yet. Start your journey now!" : `No ${filter} bookings here. Search for buses and grab your seat!`}</div>
+      <button class="search-btn" style="margin:20px auto 0;display:inline-flex;" onclick="showPage('search')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search Buses
+      </button>
+    </div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(b => {
+    const statusLabel = b.status === 'upcoming' ? '🔵 Upcoming' : b.status === 'completed' ? '✅ Completed' : '❌ Cancelled';
+    const actions = b.status === 'upcoming'
+      ? `<button class="bk-btn primary">Download Ticket</button><button class="bk-btn">Cancel</button>`
+      : b.status === 'completed'
+      ? `<button class="bk-btn primary">Download Ticket</button><button class="bk-btn">Rebook</button>`
+      : `<button class="bk-btn">Rebook</button>`;
+    return `<div class="booking-card">
+      <div class="bk-top">
+        <div>
+          <div class="bk-bus-name">${b.bus}</div>
+          <div class="bk-bus-type">${b.type}</div>
+        </div>
+        <div class="bk-status ${b.status}">${statusLabel}</div>
+      </div>
+      <div class="bk-route">
+        <div class="bk-city">
+          <div class="bk-city-name">${b.from}</div>
+          <div class="bk-city-time">${b.dep}</div>
+        </div>
+        <div class="bk-arrow">→</div>
+        <div class="bk-city" style="text-align:right">
+          <div class="bk-city-name">${b.to}</div>
+          <div class="bk-city-time">${b.arr}</div>
+        </div>
+      </div>
+      <div class="bk-meta">
+        <span>📅 <strong>${b.date}</strong></span>
+        <span>💺 Seats: <strong>${b.seats}</strong></span>
+        <span>🎫 PNR: <strong>${b.id}</strong></span>
+      </div>
+      <div class="bk-footer">
+        <div>
+          <div class="bk-total-label">Total Paid</div>
+          <div class="bk-total">₹${b.total.toLocaleString('en-IN')}</div>
+        </div>
+        <div class="bk-actions">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+document.getElementById('journey-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('journey-date').min = new Date().toISOString().split('T')[0];
+renderBuses('all');
+renderOffers('all');
+
+// ── Auth ──
+let currentUser = null;
+
+function openAuthModal(mode) {
+  document.getElementById('auth-modal-overlay').style.display = 'flex';
+  switchAuthMode(mode);
+  setTimeout(() => {
+    document.getElementById('auth-modal-overlay').style.opacity = '1';
+    document.getElementById('auth-modal-box').style.transform = 'scale(1)';
+  }, 10);
+}
+
+function closeAuthModal() {
+  const overlay = document.getElementById('auth-modal-overlay');
+  const box = document.getElementById('auth-modal-box');
+  overlay.style.opacity = '0';
+  box.style.transform = 'scale(0.96)';
+  setTimeout(() => { overlay.style.display = 'none'; clearAuthErrors(); }, 200);
+}
+
+function switchAuthMode(mode) {
+  const isLogin = mode === 'login';
+  document.getElementById('auth-title').textContent = isLogin ? 'Welcome back!' : 'Create account';
+  document.getElementById('auth-subtitle').textContent = isLogin ? 'Login to access your bookings' : 'Join millions of happy travellers';
+  document.getElementById('auth-name-group').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('auth-submit-btn').textContent = isLogin ? 'Login' : 'Create Account';
+  document.getElementById('auth-toggle-text').innerHTML = isLogin
+    ? "Don't have an account? <a href='#' onclick='switchAuthMode(\"signup\");return false;'>Sign up</a>"
+    : "Already have an account? <a href='#' onclick='switchAuthMode(\"login\");return false;'>Login</a>";
+  document.getElementById('auth-modal-box').setAttribute('data-mode', mode);
+  clearAuthErrors();
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-phone').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-confirm').value = '';
+  document.getElementById('auth-name').value = '';
+}
+
+function clearAuthErrors() {
+  document.querySelectorAll('.auth-error').forEach(e => e.textContent = '');
+  document.querySelectorAll('.auth-input').forEach(i => i.style.borderColor = '');
+}
+
+function setFieldError(fieldId, errId, msg) {
+  document.getElementById(fieldId).style.borderColor = '#d32f2f';
+  document.getElementById(errId).textContent = msg;
+}
+
+function submitAuth() {
+  clearAuthErrors();
+  const mode = document.getElementById('auth-modal-box').getAttribute('data-mode');
+  const email = document.getElementById('auth-email').value.trim();
+  const phone = document.getElementById('auth-phone').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const confirm = document.getElementById('auth-confirm').value;
+  const name = document.getElementById('auth-name').value.trim();
+  let valid = true;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setFieldError('auth-email', 'err-email', 'Enter a valid email address');
+    valid = false;
+  }
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    setFieldError('auth-phone', 'err-phone', 'Enter a valid 10-digit mobile number');
+    valid = false;
+  }
+  if (password.length < 6) {
+    setFieldError('auth-password', 'err-password', 'Password must be at least 6 characters');
+    valid = false;
+  }
+  if (mode === 'signup') {
+    if (!name) { setFieldError('auth-name', 'err-name', 'Please enter your name'); valid = false; }
+    if (password !== confirm) { setFieldError('auth-confirm', 'err-confirm', 'Passwords do not match'); valid = false; }
+  }
+  if (!valid) return;
+
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true;
+  btn.textContent = mode === 'login' ? 'Logging in…' : 'Creating account…';
+
+  setTimeout(() => {
+    btn.disabled = false;
+    currentUser = { name: name || email.split('@')[0], email, phone };
+    closeAuthModal();
+    updateAuthUI();
+  }, 900);
+}
+
+function updateAuthUI() {
+  if (currentUser) {
+    document.getElementById('nav-login-btn').style.display = 'none';
+    document.getElementById('nav-signup-btn').style.display = 'none';
+    document.getElementById('nav-user-info').style.display = 'flex';
+    document.getElementById('menu-name').textContent = currentUser.name;
+    document.getElementById('menu-email').textContent = currentUser.email;
+    document.getElementById('nav-avatar').title = currentUser.name;
+  } else {
+    document.getElementById('nav-login-btn').style.display = '';
+    document.getElementById('nav-signup-btn').style.display = '';
+    document.getElementById('nav-user-info').style.display = 'none';
+  }
+}
+
+function toggleUserMenu() {
+  const menu = document.getElementById('user-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function logoutUser() {
+  currentUser = null;
+  updateAuthUI();
+  toggleUserMenu();
+}
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('user-menu');
+  const avatar = document.getElementById('nav-avatar');
+  if (menu && menu.style.display === 'block' && !menu.contains(e.target) && e.target !== avatar) {
+    menu.style.display = 'none';
+  }
+});
+</script>
+
+<div id="auth-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity 0.2s;">
+  <div id="auth-modal-box" data-mode="login" style="background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,0.2);transform:scale(0.96);transition:transform 0.2s;overflow:hidden;">
+    <!-- Top bar -->
+    <div style="background:var(--red);padding:24px 24px 20px;position:relative;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+      <div style="font-family:'DM Serif Display',serif;font-size:26px;color:#fff;margin-bottom:4px;" id="auth-title">Welcome back!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.8);" id="auth-subtitle">Login to access your bookings</div>
+    </div>
+    <!-- Form -->
+    <div style="padding:24px;">
+      <!-- Name (signup only) -->
+      <div id="auth-name-group" style="display:none;margin-bottom:16px;">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:#666;font-weight:500;display:block;margin-bottom:5px;">Full Name</label>
+        <input id="auth-name" type="text" placeholder="Your full name" class="auth-input" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'">
+        <div id="err-name" class="auth-error" style="color:#d32f2f;font-size:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Email -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:#666;font-weight:500;display:block;margin-bottom:5px;">Email Address</label>
+        <input id="auth-email" type="email" placeholder="you@example.com" class="auth-input" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'">
+        <div id="err-email" class="auth-error" style="color:#d32f2f;font-size:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Phone -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:#666;font-weight:500;display:block;margin-bottom:5px;">Mobile Number</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#666;font-weight:500;">+91</span>
+          <input id="auth-phone" type="tel" maxlength="10" placeholder="10-digit mobile number" class="auth-input" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px 11px 44px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+        </div>
+        <div id="err-phone" class="auth-error" style="color:#d32f2f;font-size:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Password -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:#666;font-weight:500;display:block;margin-bottom:5px;">Password</label>
+        <div style="position:relative;">
+          <input id="auth-password" type="password" placeholder="Min. 6 characters" class="auth-input" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 42px 11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'" onkeydown="if(event.key==='Enter')submitAuth()">
+          <button type="button" onclick="togglePwd('auth-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#999;padding:4px;">👁</button>
+        </div>
+        <div id="err-password" class="auth-error" style="color:#d32f2f;font-size:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Confirm password (signup only) -->
+      <div id="auth-confirm-group" style="margin-bottom:20px;">
+        <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:#666;font-weight:500;display:block;margin-bottom:5px;">Confirm Password</label>
+        <div style="position:relative;">
+          <input id="auth-confirm" type="password" placeholder="Re-enter password" class="auth-input" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 42px 11px 14px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='#e0e0e0'" onkeydown="if(event.key==='Enter')submitAuth()">
+          <button type="button" onclick="togglePwd('auth-confirm',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#999;padding:4px;">👁</button>
+        </div>
+        <div id="err-confirm" class="auth-error" style="color:#d32f2f;font-size:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Submit -->
+      <button id="auth-submit-btn" onclick="submitAuth()" style="width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--red-dark)'" onmouseout="this.style.background='var(--red)'">Login</button>
+      <!-- Toggle -->
+      <div id="auth-toggle-text" style="text-align:center;margin-top:16px;font-size:13px;color:#666;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePwd(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+switchAuthMode('login');
+
+const origSwitch = switchAuthMode;
+switchAuthMode = function(mode) {
+  origSwitch(mode);
+  document.getElementById('auth-confirm-group').style.display = mode === 'login' ? 'none' : 'block';
+};
+switchAuthMode('login');
+</script>
+</body>
+</html>
